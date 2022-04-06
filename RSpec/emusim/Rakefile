@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+ENV['SAUCE_BUILD_NAME'] = "Ruby EmuSim Local - #{Time.now.to_i}"
+# parallel_test gem setting for how many to run in parallel
+ENV['TEST_ENV_NUMBER'] = '25'
+
+desc 'Android Emulator'
+task :android do
+  ENV['DEVICE_NAME'] = 'Android GoogleAPI Emulator'
+  system('parallel_rspec -- -t platform:android -- spec')
+end
+
+desc 'iOS Simulator'
+task :iphone do
+  ENV['DEVICE_NAME'] = 'iPhone Simulator'
+  system('parallel_rspec -- -t platform:ios -- spec')
+end
+
+desc 'Safari'
+task :safari do
+  ENV['BROWSER_NAME'] = 'Safari'
+  ENV['PLATFORM_NAME'] = 'iOS'
+  ENV['DEVICE_NAME'] = 'iPhone Simulator'
+  system('parallel_rspec -- -t platform:web -- spec')
+end
+
+desc 'Chrome'
+task :chrome do
+  ENV['BROWSER_NAME'] = 'Chrome'
+  ENV['PLATFORM_NAME'] = 'Android'
+  ENV['DEVICE_NAME'] = 'Android GoogleAPI Emulator'
+  system('parallel_rspec -- -t platform:web -- spec')
+end
+
+# For larger test suites probably don't want to use multitask for this
+desc 'run all configs in parallel'
+multitask parallel: %i[android iphone safari chrome]

@@ -1,0 +1,52 @@
+# frozen_string_literal: true
+
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+ENV['SAUCE_BUILD_NAME'] = "Ruby RDC Local - #{Time.now.to_i}"
+# parallel_test gem setting for how many to run in parallel
+ENV['TEST_ENV_NUMBER'] = '10'
+
+desc 'Samsung Device'
+task :samsung do
+  ENV['DEVICE_NAME'] = 'samsung.*'
+  system('parallel_rspec -- -t platform:android -- spec')
+end
+
+desc 'Pixel Device'
+task :pixel do
+  ENV['DEVICE_NAME'] = 'Google Pixel.*'
+  system('parallel_rspec -- -t platform:android -- spec')
+end
+
+desc 'iPhone Device'
+task :iphone do
+  ENV['DEVICE_NAME'] = 'iPhone .*'
+  system('parallel_rspec -- -t platform:ios -- spec')
+end
+
+desc 'iPad Device'
+task :ipad do
+  ENV['DEVICE_NAME'] = 'iPad .*'
+  system('parallel_rspec -- -t platform:ios -- spec')
+end
+
+desc 'Safari'
+task :safari do
+  ENV['BROWSER_NAME'] = 'safari'
+  ENV['DEVICE_NAME'] = 'iPhone .*'
+  ENV['PLATFORM_NAME'] = 'iOS'
+  system('parallel_rspec -- -t platform:web -- spec')
+end
+
+desc 'Chrome'
+task :chrome do
+  ENV['BROWSER_NAME'] = 'chrome'
+  ENV['DEVICE_NAME'] = 'samsung.*'
+  ENV['PLATFORM_NAME'] = 'Android'
+  system('parallel_rspec -- -t platform:web -- spec')
+end
+
+# For larger test suites probably don't want to use multitask for this
+desc 'run all configs in parallel'
+multitask parallel: %i[pixel samsung iphone ipad chrome safari]
